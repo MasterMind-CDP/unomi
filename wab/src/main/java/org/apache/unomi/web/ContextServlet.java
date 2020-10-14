@@ -136,8 +136,8 @@ public class ContextServlet extends HttpServlet {
             // Get profile id from the cookie
             profileId = ServletCommon.getProfileIdCookieValue(request, profileIdCookieName);
         }
-
-        if (profileId == null && sessionId == null && personaId == null) {
+        logger.warn("*****vivek******" + profileId);
+        if (profileId == null && sessionId == null  && personaId == null) {
             ((HttpServletResponse)response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Check logs for more details");
             logger.error("Couldn't find profileId, sessionId or personaId in incoming request! Stopped processing request. See debug level for more information");
             if (logger.isDebugEnabled()) {
@@ -150,12 +150,13 @@ public class ContextServlet extends HttpServlet {
         if (profile == null) {
             // Not a persona, resolve profile now
             boolean profileCreated = false;
-
+            logger.warn("*****vivek******" + profileId);
             boolean invalidateProfile = request.getParameter("invalidateProfile") != null ?
                     new Boolean(request.getParameter("invalidateProfile")) : false;
-            if (profileId == null || invalidateProfile) {
+            if (invalidateProfile) {
                 // no profileId cookie was found or the profile has to be invalidated, we generate a new one and create the profile in the profile service
-                profile = createNewProfile(null, response, timestamp);
+                //TODO Check how to invalidate profile.
+                profile = createNewProfile(profileId, response, timestamp);
                 profileCreated = true;
             } else {
                 profile = profileService.load(profileId);
@@ -421,14 +422,8 @@ public class ContextServlet extends HttpServlet {
     }
 
     private Profile createNewProfile(String existingProfileId, ServletResponse response, Date timestamp) {
-        Profile profile;
-        String profileId = existingProfileId;
-        if (profileId == null) {
-            profileId = UUID.randomUUID().toString();
-        }
-        profile = new Profile(profileId);
+        Profile profile = new Profile(existingProfileId);
         profile.setProperty("firstVisit", timestamp);
-        HttpUtils.sendProfileCookie(profile, response, profileIdCookieName, profileIdCookieDomain, profileIdCookieMaxAgeInSeconds);
         return profile;
     }
 

@@ -133,11 +133,11 @@ public class EventsCollectorServlet extends HttpServlet {
             }
             String cookieProfileId = ServletCommon.getProfileIdCookieValue(request, profileIdCookieName);
             if (StringUtils.isNotBlank(cookieProfileId)) {
-                profile = profileService.load(cookieProfileId);
+                profile = new Profile("temp_" + UUID.randomUUID().toString());
             }
             if (profile == null) {
                 // Create non persisted profile to create the session
-                profile = new Profile("temp_" + UUID.randomUUID().toString());
+                profile = new Profile(cookieProfileId);
                 profile.setProperty("firstVisit", timestamp);
             }
             /*
